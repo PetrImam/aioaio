@@ -1,2 +1,4 @@
 aiohttp
-sqlalchemy
+aiosqlite
+pyjwt
+bcrypt
