@@ -1,5 +1,6 @@
 aiohttp
+SQLAlchemy>=2.0
 aiosqlite
-python-jose[cryptography]
+python-jose
 passlib[bcrypt]
 python-dotenv

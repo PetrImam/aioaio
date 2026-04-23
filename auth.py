@@ -1,19 +1,12 @@
 import os
 from datetime import datetime, timedelta
-
-from jose import jwt
+from jose import jwt, JWTError
 from passlib.context import CryptContext
-from dotenv import load_dotenv
 
-load_dotenv()
-
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY", "secret")
 ALGORITHM = "HS256"
 
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto"
-)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def hash_password(password):
@@ -24,29 +17,15 @@ def verify_password(password, hashed):
     return pwd_context.verify(password, hashed)
 
 
-def create_token(user_id, role):
+def create_token(data: dict):
+    payload = data.copy()
+    payload["exp"] = datetime.utcnow() + timedelta(hours=48)
 
-    payload = {
-        "user_id": user_id,
-        "role": role,
-        "exp": datetime.utcnow() + timedelta(hours=48)
-    }
-
-    return jwt.encode(
-        payload,
-        SECRET_KEY,
-        algorithm=ALGORITHM
-    )
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
 def decode_token(token):
-
     try:
-        return jwt.decode(
-            token,
-            SECRET_KEY,
-            algorithms=[ALGORITHM]
-        )
-
-    except:
+        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError:
         return None

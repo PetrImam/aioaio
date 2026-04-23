@@ -1,44 +1,28 @@
 from aiohttp import web
+from database import engine, Base
 
-from db import init_db
-from handlers import (
-    register,
-    login,
-    create_ad,
-    get_ad,
-    delete_ad
-)
-
-from middleware import auth_middleware
+from routes.users import register
+from routes.ads import create_ad, get_ad, delete_ad
 
 
-app = web.Application(
-    middlewares=[auth_middleware]
-)
+async def init_db():
 
-app.router.add_post("/register", register)
-app.router.add_post("/login", login)
+    async with engine.begin() as conn:
 
-app.router.add_post(
-    "/advertisement",
-    create_ad
-)
-
-app.router.add_get(
-    "/advertisement/{ad_id}",
-    get_ad
-)
-
-app.router.add_delete(
-    "/advertisement/{ad_id}",
-    delete_ad
-)
+        await conn.run_sync(Base.metadata.create_all)
 
 
-async def startup(app):
-    await init_db()
+app = web.Application()
+
+app.router.add_post("/user", register)
+
+app.router.add_post("/ads", create_ad)
+
+app.router.add_get("/ads/{ad_id}", get_ad)
+
+app.router.add_delete("/ads/{ad_id}", delete_ad)
 
 
-app.on_startup.append(startup)
+if __name__ == "__main__":
 
-web.run_app(app, port=8080)
+    web.run_app(app, port=8080)
